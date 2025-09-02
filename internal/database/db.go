@@ -1,10 +1,10 @@
 package database
 
 import (
-	"log"
 	"os"
 
 	"github.com/bohdan-kozlo/todo-app/internal/models"
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -12,12 +12,12 @@ import (
 func InitDb() *gorm.DB {
 	dbUrl := os.Getenv("DATABASE_URL")
 	if dbUrl == "" {
-		log.Fatal("database url is not provided")
+		logrus.Fatal("database url is not provided")
 	}
 
 	db, err := gorm.Open(postgres.Open(dbUrl), &gorm.Config{})
 	if err != nil {
-		log.Fatal("failed to connect to database: ", err)
+		logrus.Fatal("failed to connect to database: ", err)
 	}
 
 	err = db.AutoMigrate(
@@ -27,7 +27,7 @@ func InitDb() *gorm.DB {
 		&models.UserList{},
 	)
 	if err != nil {
-		log.Fatal("failed to migrate database: ", err)
+		logrus.Fatal("failed to migrate database: ", err)
 	}
 
 	return db

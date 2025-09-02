@@ -1,25 +1,25 @@
 package main
 
 import (
-	"log"
-
 	"github.com/bohdan-kozlo/todo-app"
 	"github.com/bohdan-kozlo/todo-app/internal/database"
 	"github.com/bohdan-kozlo/todo-app/internal/handler"
 	"github.com/bohdan-kozlo/todo-app/internal/repository"
 	"github.com/bohdan-kozlo/todo-app/internal/service"
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 func main() {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("error loading env variables: ", err)
+		logrus.Fatal("error loading env variables: ", err)
 	}
 
 	if err := initConfig(); err != nil {
-		log.Fatal("error while initializing configs: ", err)
+		logrus.Fatal("error while initializing configs: ", err)
 	}
 
 	db := database.InitDb()
@@ -32,7 +32,7 @@ func main() {
 
 	err = srv.Run(viper.GetString("port"), handlers.InitRoutes())
 	if err != nil {
-		log.Fatal("error while running server: ", err)
+		logrus.Fatal("error while running server: ", err)
 	}
 }
 
