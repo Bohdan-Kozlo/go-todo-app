@@ -20,3 +20,12 @@ func (r *AuthPostgres) CreateUser(user models.User) (int, error) {
 	}
 	return int(user.ID), nil
 }
+
+func (r *AuthPostgres) GetUser(username string) (models.User, error) {
+	var user models.User
+	result := r.db.Where("username = ?", username).First(&user)
+	if result.Error != nil {
+		return models.User{}, result.Error
+	}
+	return user, nil
+}
