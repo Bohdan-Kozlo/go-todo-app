@@ -1,12 +1,24 @@
 package handler
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
 
 func (h *Handler) createList(c *gin.Context) {
 
 }
 
 func (h *Handler) getAllLists(c *gin.Context) {
+	userId, ok := c.Get(userCtx)
+	if !ok {
+		newErrorResponse(c, http.StatusUnauthorized, "unauthorized")
+	}
+
+	c.JSON(http.StatusOK, map[string]any{
+		"user_id": userId,
+	})
 
 }
 
