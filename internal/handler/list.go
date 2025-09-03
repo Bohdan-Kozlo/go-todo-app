@@ -3,22 +3,34 @@ package handler
 import (
 	"net/http"
 
+	"github.com/bohdan-kozlo/todo-app/internal/models"
 	"github.com/gin-gonic/gin"
 )
 
 func (h *Handler) createList(c *gin.Context) {
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
 
+	var input models.TodoList
+	if err := c.BindJSON(&input); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	todoListId, err := h.services.TodoList.Create(userId, input)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"id": todoListId,
+	})
 }
 
 func (h *Handler) getAllLists(c *gin.Context) {
-	userId, ok := c.Get(userCtx)
-	if !ok {
-		newErrorResponse(c, http.StatusUnauthorized, "unauthorized")
-	}
-
-	c.JSON(http.StatusOK, map[string]any{
-		"user_id": userId,
-	})
 
 }
 
