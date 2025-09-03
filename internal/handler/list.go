@@ -31,7 +31,19 @@ func (h *Handler) createList(c *gin.Context) {
 }
 
 func (h *Handler) getAllLists(c *gin.Context) {
+	userId, ok := c.Get(userCtx)
+	if !ok {
+		newErrorResponse(c, http.StatusInternalServerError, "user id not found")
+		return
+	}
 
+	lists, err := h.services.TodoList.GetAll(userId.(int))
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, lists)
 }
 
 func (h *Handler) getListById(c *gin.Context) {
