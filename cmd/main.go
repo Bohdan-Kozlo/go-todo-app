@@ -1,6 +1,11 @@
 package main
 
 import (
+	"context"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/bohdan-kozlo/todo-app"
 	"github.com/bohdan-kozlo/todo-app/internal/database"
 	"github.com/bohdan-kozlo/todo-app/internal/handler"
@@ -13,6 +18,7 @@ import (
 
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
+
 	err := godotenv.Load()
 	if err != nil {
 		logrus.Fatal("error loading env variables: ", err)
@@ -30,9 +36,22 @@ func main() {
 
 	srv := new(todo.Server)
 
-	err = srv.Run(viper.GetString("port"), handlers.InitRoutes())
-	if err != nil {
-		logrus.Fatal("error while running server: ", err)
+	go func() {
+		if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
+			logrus.Fatal("error while running http server: ", err)
+		}
+	}()
+
+	logrus.Println("Todo app started")
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	logrus.Println("Todo app shutting down")
+
+	if err := srv.Shutdown(context.Background()); err != nil {
+		logrus.Fatal("error while shutting down http server: ", err.Error())
 	}
 }
 
