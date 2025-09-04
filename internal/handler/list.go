@@ -68,9 +68,53 @@ func (h *Handler) getListById(c *gin.Context) {
 }
 
 func (h *Handler) updateList(c *gin.Context) {
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
 
+	listId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "invalid id param")
+		return
+	}
+
+	var input models.UpdateListInput
+	if err := c.BindJSON(&input); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if input.Title == nil && input.Description == nil {
+		newErrorResponse(c, http.StatusBadRequest, "no values to update")
+		return
+	}
+
+	if err := h.services.TodoList.Update(userId, listId, input); err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 }
 
 func (h *Handler) deleteList(c *gin.Context) {
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
 
+	listId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "invalid id param")
+		return
+	}
+
+	err = h.services.TodoList.Delete(userId, listId)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 }

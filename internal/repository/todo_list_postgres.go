@@ -60,3 +60,15 @@ func (s *TodoListPostgres) GetById(userId, listId int) (models.TodoList, error) 
 
 	return list, nil
 }
+
+func (s *TodoListPostgres) Delete(list *models.TodoList) error {
+	if err := s.db.Delete(list).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *TodoListPostgres) Update(updates map[string]interface{}, list *models.TodoList) error {
+	return s.db.Model(&list).Updates(updates).Error
+}

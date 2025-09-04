@@ -13,3 +13,8 @@ type TodoList struct {
 
 	Items []TodoItem `gorm:"foreignKey:ListID;constraint:OnDelete:CASCADE;"`
 }
+
+type UpdateListInput struct {
+	Title       *string `json:"title"`
+	Description *string `json:"description"`
+}
