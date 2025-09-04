@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/bohdan-kozlo/todo-app/internal/models"
 	"github.com/gin-gonic/gin"
@@ -31,23 +32,39 @@ func (h *Handler) createList(c *gin.Context) {
 }
 
 func (h *Handler) getAllLists(c *gin.Context) {
-	userId, ok := c.Get(userCtx)
-	if !ok {
-		newErrorResponse(c, http.StatusInternalServerError, "user id not found")
+	userId, err := getUserId(c)
+	if err != nil {
 		return
 	}
 
-	lists, err := h.services.TodoList.GetAll(userId.(int))
+	lists, err := h.services.TodoList.GetAll(userId)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, lists)
+	newDataResponse(c, http.StatusOK, lists)
 }
 
 func (h *Handler) getListById(c *gin.Context) {
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
 
+	listId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, "invalid id param")
+		return
+	}
+
+	list, err := h.services.TodoList.GetById(userId, listId)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	newDataResponse(c, http.StatusOK, list)
 }
 
 func (h *Handler) updateList(c *gin.Context) {

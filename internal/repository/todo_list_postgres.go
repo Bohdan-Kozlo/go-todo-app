@@ -46,3 +46,17 @@ func (s *TodoListPostgres) GetAll(userId int) ([]models.TodoList, error) {
 
 	return lists, nil
 }
+
+func (s *TodoListPostgres) GetById(userId, listId int) (models.TodoList, error) {
+	var list models.TodoList
+
+	if err := s.db.
+		Model(&models.TodoList{}).
+		Joins("INNER JOIN user_lists ul ON ul.todo_list_id = todo_lists.id").
+		Where("ul.user_id = ? AND ul.todo_list_id = ?", userId, listId).
+		First(&list).Error; err != nil {
+		return models.TodoList{}, err
+	}
+
+	return list, nil
+}
