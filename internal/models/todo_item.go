@@ -13,3 +13,9 @@ type TodoItem struct {
 	ListID uint
 	List   TodoList `gorm:"constraint:OnDelete:CASCADE;"`
 }
+
+type UpdateItemInput struct {
+	Title       *string `json:"title"`
+	Description *string `json:"description"`
+	Completed   *bool   `json:"completed"`
+}

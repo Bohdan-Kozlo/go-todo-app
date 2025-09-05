@@ -19,6 +19,11 @@ type TodoList interface {
 }
 
 type TodoItem interface {
+	Create(listId int, item models.TodoItem) (int, error)
+	GetAll(listId int) ([]models.TodoItem, error)
+	GetById(listId, itemId int) (models.TodoItem, error)
+	Update(updates map[string]interface{}, item *models.TodoItem) error
+	Delete(item *models.TodoItem) error
 }
 
 type Repository struct {
@@ -31,5 +36,6 @@ func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
 		Authorization: NewAuthPostgres(db),
 		TodoList:      NewTodoListPostgres(db),
+		TodoItem:      NewTodoItemPostgres(db),
 	}
 }
