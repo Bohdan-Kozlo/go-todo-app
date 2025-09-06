@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/bohdan-kozlo/todo-app"
+	"github.com/bohdan-kozlo/todo-app/internal"
 	"github.com/bohdan-kozlo/todo-app/internal/database"
 	"github.com/bohdan-kozlo/todo-app/internal/handler"
 	"github.com/bohdan-kozlo/todo-app/internal/repository"
