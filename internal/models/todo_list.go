@@ -9,9 +9,9 @@ type TodoList struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 
-	Users []User `gorm:"many2many:user_lists;joinForeignKey:TodoListID;joinReferences:UserID"`
+	Users []User `gorm:"many2many:user_lists;joinForeignKey:TodoListID;joinReferences:UserID" json:"-"`
 
-	Items []TodoItem `gorm:"foreignKey:ListID;constraint:OnDelete:CASCADE;"`
+	Items []TodoItem `gorm:"foreignKey:ListID;constraint:OnDelete:CASCADE;" json:"-"`
 }
 
 type UpdateListInput struct {

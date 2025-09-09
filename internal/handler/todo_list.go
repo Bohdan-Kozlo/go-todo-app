@@ -5,116 +5,101 @@ import (
 	"strconv"
 
 	"github.com/bohdan-kozlo/todo-app/internal/models"
+	"github.com/bohdan-kozlo/todo-app/pkg/apperror"
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) createList(c *gin.Context) {
+func (h *Handler) createList(c *gin.Context) *apperror.AppError {
 	userId, err := getUserId(c)
 	if err != nil {
-		return
+		return apperror.Internal("failed to get user id", err)
 	}
-
 	var input models.TodoList
 	if err := c.BindJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
+		return apperror.BadRequest("invalid request body", err)
 	}
-
-	todoListId, err := h.services.TodoList.Create(userId, input)
+	listId, err := h.services.TodoList.Create(userId, input)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
+		return apperror.Internal("failed to create list", err)
 	}
-
-	c.JSON(http.StatusOK, map[string]interface{}{
-		"id": todoListId,
-	})
+	c.JSON(http.StatusOK, map[string]any{"id": listId})
+	return nil
 }
 
-func (h *Handler) getAllLists(c *gin.Context) {
+func (h *Handler) getAllLists(c *gin.Context) *apperror.AppError {
 	userId, err := getUserId(c)
 	if err != nil {
-		return
+		return apperror.Internal("failed to get user id", err)
 	}
-
 	lists, err := h.services.TodoList.GetAll(userId)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
+		return apperror.Internal("failed to fetch lists", err)
 	}
-
 	newDataResponse(c, http.StatusOK, lists)
+	return nil
 }
 
-func (h *Handler) getListById(c *gin.Context) {
+func (h *Handler) getListById(c *gin.Context) *apperror.AppError {
 	userId, err := getUserId(c)
 	if err != nil {
-		return
+		return apperror.Internal("failed to get user id", err)
 	}
-
 	listId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "invalid id param")
-		return
+		return apperror.BadRequest("invalid id param", err)
 	}
-
 	list, err := h.services.TodoList.GetById(userId, listId)
 	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
+		if isNotFound(err) {
+			return apperror.NotFound("list not found", err)
+		}
+		return apperror.Internal("failed to fetch list", err)
 	}
-
 	newDataResponse(c, http.StatusOK, list)
+	return nil
 }
 
-func (h *Handler) updateList(c *gin.Context) {
+func (h *Handler) updateList(c *gin.Context) *apperror.AppError {
 	userId, err := getUserId(c)
 	if err != nil {
-		return
+		return apperror.Internal("failed to get user id", err)
 	}
-
 	listId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "invalid id param")
-		return
+		return apperror.BadRequest("invalid id param", err)
 	}
-
 	var input models.UpdateListInput
 	if err := c.BindJSON(&input); err != nil {
-		newErrorResponse(c, http.StatusBadRequest, err.Error())
-		return
+		return apperror.BadRequest("invalid request body", err)
 	}
-
 	if input.Title == nil && input.Description == nil {
-		newErrorResponse(c, http.StatusBadRequest, "no values to update")
-		return
+		return apperror.BadRequest("no values to update", nil)
 	}
-
 	if err := h.services.TodoList.Update(userId, listId, input); err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
+		if isNotFound(err) {
+			return apperror.NotFound("list not found", err)
+		}
+		return apperror.Internal("failed to update list", err)
 	}
-
 	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
+	return nil
 }
 
-func (h *Handler) deleteList(c *gin.Context) {
+func (h *Handler) deleteList(c *gin.Context) *apperror.AppError {
 	userId, err := getUserId(c)
 	if err != nil {
-		return
+		return apperror.Internal("failed to get user id", err)
 	}
-
 	listId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		newErrorResponse(c, http.StatusBadRequest, "invalid id param")
-		return
+		return apperror.BadRequest("invalid id param", err)
 	}
-
-	err = h.services.TodoList.Delete(userId, listId)
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
-		return
+	if err := h.services.TodoList.Delete(userId, listId); err != nil {
+		if isNotFound(err) {
+			return apperror.NotFound("list not found", err)
+		}
+		return apperror.Internal("failed to delete list", err)
 	}
-
 	c.JSON(http.StatusOK, map[string]string{"status": "ok"})
+	return nil
 }

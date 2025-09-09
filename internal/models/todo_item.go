@@ -10,8 +10,8 @@ type TodoItem struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 
-	ListID uint
-	List   TodoList `gorm:"constraint:OnDelete:CASCADE;"`
+	ListID uint     `json:"list_id"`
+	List   TodoList `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 }
 
 type UpdateItemInput struct {
